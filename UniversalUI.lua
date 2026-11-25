@@ -269,7 +269,7 @@ local connections = {}
 local destroyed = false
 local uiScaleFactor = 1
 local notificationsEnabled = true
-local sidebarHoverEnabled = false
+local sidebarHoverEnabled = true
 local menuToggleKey = Enum.KeyCode.RightControl
 local GetTargetScale
 local SetSidebar
@@ -3765,11 +3765,9 @@ ConfigManager.Register("Show Logo", Toggle(Settings, behavior, "Show Logo", true
     if OpenButton then OpenButton.ImageTransparency = value and 0 or 1 end
     if __KZ_Cozy.OpenFallback then __KZ_Cozy.OpenFallback.TextTransparency = value and 0 or 1 end
 end))
-ConfigManager.Register("Expand Sidebar on Hover", Toggle(Settings, behavior, "Expand Sidebar on Hover", false, function(value)
+ConfigManager.Register("Expand Sidebar on Hover", Toggle(Settings, behavior, "Expand Sidebar on Hover", true, function(value)
     sidebarHoverEnabled = value
-    if not value then
-        SetSidebar(true)
-    end
+    if SetSidebar then SetSidebar(not value) end
 end))
 ConfigManager.Register("Menu Keybind", Dropdown(Settings, behavior, "Menu Keybind", {"RightControl", "Insert", "Home", "F4"}, "RightControl", function(value)
     menuToggleKey = Enum.KeyCode[value] or Enum.KeyCode.RightControl
@@ -4288,6 +4286,9 @@ end
 
 Sidebar.MouseEnter:Connect(function() if sidebarHoverEnabled then SetSidebar(true) end end)
 Sidebar.MouseLeave:Connect(function() if sidebarHoverEnabled and not SearchInput:IsFocused() and not SearchResults.Visible then SetSidebar(false) end end)
+
+-- Start compact, with hover expansion enabled unless the user pins navigation open.
+SetSidebar(not sidebarHoverEnabled)
 
 local function __KZ_DecorateControl(control, page, label, description)
     if type(control) ~= "table" then control = {} end
