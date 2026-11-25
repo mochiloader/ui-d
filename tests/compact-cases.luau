@@ -200,3 +200,28 @@ request=function()return {StatusCode=429,Body=png}end
 assert(__KZ_Cozy.FetchRepositoryArt("raw","assets/cat.png")==nil)
 request=nil;assert(__KZ_Cozy.FetchRepositoryArt("raw","assets/cat.png")==nil)
 print("PASS failed, throttled or non-image downloads preserve native fallback instead of caching error pages")
+
+-- Exercise the real sidebar controller and pointer events.
+do
+    local SIDEBAR_COMPACT,SIDEBAR_OPEN=64,188
+    local sidebarExpanded,sidebarHoverEnabled=true,true
+    local BrandLogoShell,BrandTitle,BrandSub,ProfileName,ProfileStatus=New("Frame",{}),New("TextLabel",{}),New("TextLabel",{}),New("TextLabel",{}),New("TextLabel",{})
+    local label,badge=New("TextLabel",{Parent=Sidebar}),New("TextLabel",{Parent=Sidebar})
+    local navEntries={Home={Label=label,Badge=badge,ActiveCount=1}}
+    local layoutExpanded
+    local function ApplyContentLayout(expanded) layoutExpanded=expanded end
+    SearchInput.FocusedNow=false;SearchResults.Visible=false
+    -- INSERT SIDEBAR
+    advance(1)
+    assert(not sidebarExpanded and Sidebar.Size.X.Offset==64 and layoutExpanded==false)
+    assert(not SearchInput.Visible and __KZ_QOL.SearchExpand.Visible and not badge.Visible)
+    Sidebar.MouseEnter:Fire();advance(1)
+    assert(sidebarExpanded and Sidebar.Size.X.Offset==188 and SearchInput.Visible and badge.Visible)
+    SearchInput.FocusedNow=true;Sidebar.MouseLeave:Fire();advance(1);assert(sidebarExpanded)
+    SearchInput.FocusedNow=false;SearchResults.Visible=true;Sidebar.MouseLeave:Fire();advance(1);assert(sidebarExpanded)
+    SearchResults.Visible=false;Sidebar.MouseLeave:Fire();advance(1)
+    assert(not sidebarExpanded and Sidebar.Size.X.Offset==64 and label.TextTransparency==1)
+    sidebarHoverEnabled=false;SetSidebar(true);Sidebar.MouseLeave:Fire();advance(1);assert(sidebarExpanded)
+    sidebarHoverEnabled=true;SetSidebar(false);advance(1);assert(not sidebarExpanded)
+    print("PASS sidebar starts compact, expands on hover, collapses on leave and protects active search and pinned navigation")
+end

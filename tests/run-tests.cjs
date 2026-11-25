@@ -6,6 +6,7 @@ function slice(start,end) {
   assert(a>=0&&b>a,'missing implementation boundary: '+start);
   return source.slice(a,b);
 }
+assert(source.includes('local sidebarHoverEnabled = true') && source.includes('\"Expand Sidebar on Hover\", true, function(value)'), 'hover collapse must default on');
 const crypto=require('node:crypto');
 const preserved=JSON.parse(fs.readFileSync(path.join(__dirname,'behavior-baseline.json'),'utf8'));
 for(const block of preserved.blocks) {
@@ -88,6 +89,7 @@ try {
   const compactBundle=path.join(temp,'compact.luau');
   fs.writeFileSync(compactBundle,fs.readFileSync(path.join(__dirname,'intro-harness.luau'),'utf8')+'\n'+
     fs.readFileSync(path.join(__dirname,'compact-cases.luau'),'utf8')
+      .replace('-- INSERT SIDEBAR',()=>slice('SetSidebar = function(expanded)','local function __KZ_DecorateControl('))
       .replace('-- INSERT HEADER',()=>slice('local PageTitle = New(','local function IconButton('))
       .replace('-- INSERT METRICS',()=>slice('-- The existing half-second render sampler','local lastIteration = tick()'))
       .replace('-- INSERT SEARCH POSITION',()=>slice('local function PositionSearchResults()','local ToastHost ='))
